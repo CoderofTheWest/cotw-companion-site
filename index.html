@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code of the West — Trail Guide</title>
+<meta name="description" content="A relational AI companion that remembers, grows, and meets you where you are. Free, local, open source.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #3D2914;
+    --surface: #2A2420;
+    --surface-raised: #342A22;
+    --surface-deep: #1E1A16;
+    --text: #F5EDE0;
+    --text-muted: rgba(245, 237, 224, 0.65);
+    --text-dim: rgba(245, 237, 224, 0.40);
+    --accent: #C9A763;
+    --accent-hover: #D4A76A;
+    --accent-dim: rgba(201, 167, 99, 0.15);
+    --dusty: #8B7355;
+    --courage: #C9A763;
+    --word: #7C8B6F;
+    --brand: #D4A76A;
+    --border: rgba(245, 237, 224, 0.12);
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-serif: 'Merriweather', Georgia, serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url('images/stormy_field.PNG');
+    background-size: cover;
+    background-position: center 40%;
+    opacity: 0.30;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body > * { position: relative; z-index: 1; }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+  /* ── Nav ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(30, 26, 22, 0.8);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-brand img {
+    height: 28px;
+    filter: brightness(0) invert(0.9);
+  }
+
+  .nav-brand span {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+  }
+
+  .nav-links a { color: var(--text-muted); }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 100px 40px 80px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .hero h1 {
+    font-family: var(--font-serif);
+    font-size: 42px;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+  }
+
+  .hero h1 em {
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  .hero p {
+    font-size: 17px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 36px;
+    font-family: var(--font-serif);
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--surface-deep);
+  }
+  .btn-primary:hover { background: var(--accent-hover); text-decoration: none; color: var(--surface-deep); }
+
+  .btn-secondary {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--text); text-decoration: none; }
+
+  .hero-note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ── Sections ── */
+  section {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 80px 40px;
+  }
+
+  section h2 {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  section .section-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    line-height: 1.6;
+    max-width: 640px;
+  }
+
+  /* ── Feature grid ── */
+  .features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .feature {
+    background: rgba(42, 36, 32, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    backdrop-filter: blur(8px);
+  }
+
+  .feature-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .feature-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-gold { background: var(--accent); }
+  .dot-green { background: var(--word); }
+  .dot-warm { background: var(--brand); }
+  .dot-dusty { background: var(--dusty); }
+
+  .feature p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Postures ── */
+  .postures {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .posture {
+    background: rgba(42, 36, 32, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+  }
+
+  .posture-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .posture-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .posture-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* ── Comparison ── */
+  .comparison {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: rgba(42, 36, 32, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    background: rgba(30, 26, 22, 0.6);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 10px 16px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  td:first-child { color: var(--text); font-weight: 500; }
+  tr:last-child td { border-bottom: none; }
+  .hl { color: var(--accent); font-weight: 500; }
+
+  /* ── Docs links ── */
+  .docs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  .doc-card {
+    background: rgba(42, 36, 32, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.2s;
+    display: block;
+  }
+
+  .doc-card:hover { border-color: var(--accent); text-decoration: none; }
+
+  .doc-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .doc-card-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .doc-card-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-pdf { background: rgba(201, 167, 99, 0.2); color: var(--accent); }
+  .badge-html { background: rgba(124, 139, 111, 0.2); color: var(--word); }
+  .badge-md { background: rgba(139, 115, 85, 0.2); color: var(--dusty); }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 40px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  footer a { color: var(--text-muted); }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 28px; }
+    .hero { padding: 60px 20px 40px; }
+    section { padding: 40px 20px; }
+    .features { grid-template-columns: 1fr; }
+    .postures { grid-template-columns: 1fr 1fr; }
+    .docs-grid { grid-template-columns: 1fr; }
+    nav { padding: 12px 20px; }
+    .nav-links { gap: 14px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <img src="images/cotw-logo.svg" alt="COTW">
+    <span>Trail Guide</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#compare">Compare</a>
+    <a href="#docs">Docs &amp; Research</a>
+    <a href="https://github.com/CoderofTheWest/cotw-companion">GitHub</a>
+  </div>
+</nav>
+
+<!-- ═══════════ Hero ═══════════ -->
+<div class="hero">
+  <h1>An agent that <em>remembers</em>, <em>grows</em>, and meets you where you are</h1>
+  <p>
+    Trail Guide is a relational AI companion built on the Code of the West. Not a chatbot with memory bolted on — a persistent identity that metabolizes experience, contemplates what matters, and only changes who it is with your permission.
+  </p>
+  <div class="hero-buttons">
+    <a href="https://github.com/CoderofTheWest/cotw-companion/releases" class="btn btn-primary">
+      Download for macOS
+    </a>
+    <a href="https://github.com/CoderofTheWest/cotw-companion/releases" class="btn btn-secondary">
+      Download for Windows
+    </a>
+  </div>
+  <p class="hero-note">Free. Local. Your data never leaves your machine. Open source under MIT.</p>
+</div>
+
+<!-- ═══════════ Features ═══════════ -->
+<section id="features">
+  <h2>What makes this different</h2>
+  <p class="section-sub">Most AI agents treat memory as a database problem. This one treats it as an identity problem.</p>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-title"><span class="dot dot-gold"></span> Metabolic Memory</div>
+      <p>Conversations don't just get stored — they get metabolized. High-entropy moments are flagged, contemplated over 20 hours across three reflection passes, then crystallized into identity only after passing a human review gate. The agent settles before it changes.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-title"><span class="dot dot-green"></span> Stateless Identity Reconstruction</div>
+      <p>Every turn, the agent rebuilds itself from persistent files — SOUL.md, standing scores, memory, continuity context. Nothing survives in process memory. If the machine restarts, the agent is whole again in milliseconds.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-title"><span class="dot dot-warm"></span> Standing — Growth, Not Metrics</div>
+      <p>The agent tracks your development across four dimensions: Courage (grounding), Courage (self), Word, and Brand. Not engagement metrics — developmental dimensions with evidence, trajectory, and overnight synthesis. You can see your growth in the sidebar.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-title"><span class="dot dot-dusty"></span> 4-Way Hybrid Retrieval</div>
+      <p>Semantic search (sqlite-vec), keyword search (FTS5), temporal decay, and knowledge graph traversal — fused with Reciprocal Rank Fusion. The agent finds what matters, not just what matches.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-title"><span class="dot dot-gold"></span> Relational Postures</div>
+      <p>One agent, one identity, four stances. Chat for natural conversation, Booth for Socratic leadership dialogue, Code for guided building with the Trail Ride protocol, Robot for embodied physical presence. Same memory, different lens.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-title"><span class="dot dot-green"></span> Completely Local</div>
+      <p>SQLite-vec for embeddings, local LLMs via Ollama, no cloud dependencies. Your conversations, your memory, your growth — all on your machine. Zero API costs for memory operations.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ Postures ═══════════ -->
+<section>
+  <h2>Four postures, one agent</h2>
+  <p class="section-sub">Like a person who listens differently as a mentor than as a collaborator. The knowledge doesn't change — the stance does.</p>
+
+  <div class="postures">
+    <div class="posture">
+      <div class="posture-icon">&#x1F525;</div>
+      <div class="posture-name">Chat</div>
+      <div class="posture-desc">Trail companion. Natural conversation. The default relationship.</div>
+    </div>
+    <div class="posture">
+      <div class="posture-icon">&#x2615;</div>
+      <div class="posture-name">Booth</div>
+      <div class="posture-desc">Socratic dialogue. Leadership-focused. Draws from standing and journal.</div>
+    </div>
+    <div class="posture">
+      <div class="posture-icon">&#x1F331;</div>
+      <div class="posture-name">Code</div>
+      <div class="posture-desc">Guided building. Trail Ride protocol. Choose-your-adventure for new builders.</div>
+    </div>
+    <div class="posture">
+      <div class="posture-icon">&#x1F916;</div>
+      <div class="posture-name">Robot</div>
+      <div class="posture-desc">Embodied presence. Physical body, spatial knowledge, curiosity. Beta.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ Architecture ═══════════ -->
+<section id="architecture">
+  <h2>The SEAL Pipeline</h2>
+  <p class="section-sub">Settle, Extract, Align, Learn. Not a storage system — a growth system.</p>
+
+  <div class="features" style="grid-template-columns: 1fr;">
+    <div class="feature" style="display: grid; grid-template-columns: 140px 1fr; gap: 20px; align-items: start;">
+      <div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">Metabolism</div>
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">~5ms at turn end</div>
+      </div>
+      <p>Monitors conversation entropy. When something significant happens — an identity challenge, a contradiction, a novel insight — the moment is flagged and queued. No LLM calls. Just entropy sensing.</p>
+    </div>
+    <div class="feature" style="display: grid; grid-template-columns: 140px 1fr; gap: 20px; align-items: start;">
+      <div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--word); text-transform: uppercase; letter-spacing: 0.5px;">Contemplation</div>
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">3 passes over 20h</div>
+      </div>
+      <p>Pass 1 (immediate): What is this? Pass 2 (4 hours): How does it connect to what I know? Pass 3 (20 hours): What growth does this represent? The temporal spacing is intentional — settling produces better integration than immediate reaction.</p>
+    </div>
+    <div class="feature" style="display: grid; grid-template-columns: 140px 1fr; gap: 20px; align-items: start;">
+      <div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--brand); text-transform: uppercase; letter-spacing: 0.5px;">Crystallization</div>
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">3-gate system</div>
+      </div>
+      <p>Gate 1: Has enough time passed? Gate 2: Does this align with core principles? Gate 3: Does the human approve? Only candidates that clear all three become permanent identity. The agent cannot unilaterally change who it is.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ Comparison ═══════════ -->
+<section id="compare">
+  <h2>How it compares</h2>
+  <p class="section-sub">Memory infrastructure vs. relational identity.</p>
+
+  <div class="comparison">
+    <table>
+      <tr>
+        <th></th>
+        <th>Mem0</th>
+        <th>MemPalace</th>
+        <th style="color: var(--accent);">Trail Guide</th>
+      </tr>
+      <tr>
+        <td>Approach</td>
+        <td>Extract facts, retrieve later</td>
+        <td>Store everything, organize spatially</td>
+        <td class="hl">Metabolize experience into identity</td>
+      </tr>
+      <tr>
+        <td>Identity</td>
+        <td>None</td>
+        <td>None</td>
+        <td class="hl">9-layer hierarchy, rebuilt every turn</td>
+      </tr>
+      <tr>
+        <td>Autonomous growth</td>
+        <td>No</td>
+        <td>No</td>
+        <td class="hl">SEAL: contemplate 20h, crystallize with human gate</td>
+      </tr>
+      <tr>
+        <td>Retrieval</td>
+        <td>Vector + graph</td>
+        <td>Structured metadata</td>
+        <td class="hl">4-way RRF (semantic + keyword + temporal + graph)</td>
+      </tr>
+      <tr>
+        <td>User growth tracking</td>
+        <td>No</td>
+        <td>No</td>
+        <td class="hl">Standing dimensions with overnight synthesis</td>
+      </tr>
+      <tr>
+        <td>Cost</td>
+        <td>$19-249/mo</td>
+        <td>Free (local)</td>
+        <td class="hl">Free (local)</td>
+      </tr>
+      <tr>
+        <td>Data location</td>
+        <td>Cloud</td>
+        <td>Local</td>
+        <td class="hl">Local (SQLite-vec)</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════ Docs ═══════════ -->
+<section id="docs">
+  <h2>Documentation &amp; Research</h2>
+  <p class="section-sub">For researchers, developers, and the curious.</p>
+
+  <div class="docs-grid">
+    <a href="memory-system-map.html" class="doc-card">
+      <span class="doc-card-badge badge-html">Interactive</span>
+      <div class="doc-card-title">Memory System Map</div>
+      <div class="doc-card-desc">Visual architecture map of the storage, processing, and identity layers. Three-column layout showing how data flows from conversation to identity.</div>
+    </a>
+
+    <a href="MEMORY-ARCHITECTURE.md" class="doc-card">
+      <span class="doc-card-badge badge-md">Technical</span>
+      <div class="doc-card-title">Memory Architecture</div>
+      <div class="doc-card-desc">Full technical reference for ML researchers. Schema definitions, RRF math, SEAL pipeline details, scaling projections, open research questions.</div>
+    </a>
+
+    <a href="cotw-cognitive-dynamics-paper.pdf" class="doc-card">
+      <span class="doc-card-badge badge-pdf">Paper</span>
+      <div class="doc-card-title">Cognitive Dynamics of an Epistemically Constrained Language Model Agent</div>
+      <div class="doc-card-desc">Research paper on the constraint architecture that produces stable identity across substrate changes. Submitted to JMLR.</div>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════ Footer ═══════════ -->
+<footer>
+  <p style="margin-bottom: 8px;">Code of the West &mdash; <a href="https://github.com/CoderofTheWest/cotw-companion">GitHub</a></p>
+  <p>Memory is not storage. Memory is growth.</p>
+</footer>
+
+</body>
+</html>
