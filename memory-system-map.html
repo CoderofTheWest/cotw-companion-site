@@ -311,11 +311,11 @@
       <div class="card-body">
         The core memory store. Every conversation exchange is paired (user + agent), embedded as a 384-dimensional vector, and indexed for both semantic and keyword search.
         <ul class="card-list">
-          <li><strong>exchanges</strong> &mdash; paired user/agent turns with timestamps, topics</li>
+          <li><strong>exchanges</strong> &mdash; paired user/agent turns with timestamps, topics, <strong>thread_id</strong></li>
           <li><strong>vec_exchanges</strong> &mdash; 384-dim embeddings (Xenova/all-MiniLM-L6-v2)</li>
           <li><strong>fts_exchanges</strong> &mdash; FTS5 full-text with porter stemmer</li>
           <li><strong>knowledge_entries</strong> &mdash; extracted workspace facts with supersession tracking</li>
-          <li><strong>summaries</strong> &mdash; DAG-structured compression (daily &rarr; weekly &rarr; monthly)</li>
+          <li><strong>summaries</strong> &mdash; DAG-structured compression (daily &rarr; weekly &rarr; monthly), thread-scoped</li>
           <li><strong>topic_hierarchy</strong> &mdash; co-occurrence tracking across sessions</li>
           <li><strong>sessions</strong> &mdash; conversation sessions with auto-generated titles</li>
         </ul>
@@ -348,11 +348,31 @@
         Written on every <code>agent_end</code>. Consumed on next <code>session_start</code>. The bridge between sessions. Contains key topics, temporal markers, and an <strong>Open Threads</strong> section &mdash; regex-extracted commitments, TODOs, and investigations from conversation + scan of active project manifests (up to 7 threads).
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-title">Thread Handoffs <span class="badge badge-store">Markdown</span></div>
+      <div class="card-body">
+        Persistent per-thread handoff files &mdash; <strong>overwritten on each write, never deleted after read</strong> (unlike session handoffs which are consumed). Each thread maintains its own handoff with compaction count in the header. On thread re-entry, an <strong>LLM warm start</strong> synthesizes the handoff into natural prose instead of raw template injection.
+      </div>
+    </div>
   </div>
 
   <!-- ═══════════ CENTER COLUMN: Processing Pipeline ═══════════ -->
   <div class="column center">
     <h2>Processing Pipeline</h2>
+
+    <div class="card flow-card">
+      <div class="card-title">Infinite Threads <span class="badge badge-core">Scoping</span></div>
+      <div class="card-body">
+        Thread = persistent project scope (survives restarts). Session = ephemeral execution context (disposable). Threads and modes are orthogonal &mdash; a thread can span Chat, Code, and Booth.
+        <ul class="card-list">
+          <li><strong>Thread-scoped storage</strong> &mdash; thread_id flows from GUI &rarr; plugin &rarr; all storage layers (exchanges, summaries, archives, knowledge)</li>
+          <li><strong>Thread-boosted retrieval</strong> &mdash; 80% RRF boost for same-thread results</li>
+          <li><strong>LLM warm start</strong> &mdash; synthesizes thread handoff into natural prose on re-entry (not raw template)</li>
+          <li><strong>Consolidation</strong> &mdash; after 5 compactions, force session restart to rebuild from crystallized state</li>
+        </ul>
+      </div>
+    </div>
 
     <div class="card flow-card">
       <div class="card-title">Retrieval: 4-Way RRF Fusion <span class="badge badge-core">Core</span></div>
@@ -363,7 +383,10 @@
           <li><strong>Keyword</strong> &mdash; FTS5 BM25 with sanitized query terms (weight: 0.15)</li>
           <li><strong>Temporal</strong> &mdash; exponential decay, 14-day half-life (weight: 0.15)</li>
           <li><strong>Graph</strong> &mdash; multi-hop traversal with confidence decay per hop</li>
+          <li><strong>Thread boost</strong> &mdash; 80% RRF score boost for results matching active thread</li>
         </ul>
+        <strong>Adaptive thresholds:</strong> Sparse corpus adjustment relaxes distance threshold to 1.3 when &lt; 2,000 exchanges. As corpus grows, natural embedding density makes this irrelevant.
+        <br><strong>Proper noun injection:</strong> If the user mentions a named entity and results contain it, inject regardless of distance score. Catches capitalized sequences, names with articles, mid-sentence proper nouns.
       </div>
     </div>
 
@@ -398,11 +421,13 @@
         Every turn, the agent's context is assembled from multiple sources via plugin hooks at <code>before_agent_start</code>:
         <ul class="card-list">
           <li>Stability context (entropy, loop detection, principle anchors)</li>
-          <li>Continuity context (session info, handoff, archive bootstrap, temporal markers)</li>
+          <li>Continuity context (session info, handoff, archive bootstrap, temporal markers, thread warm start)</li>
           <li>Graph context (entity relationships relevant to current exchange)</li>
           <li>Truth plugin (current-state facts supersede stale memories)</li>
           <li>Mode injection (Booth/Code/Robot posture overlays)</li>
+          <li>Code Evolution scaffold (tool hints, learned rules, workflow patterns &mdash; Code mode only)</li>
         </ul>
+        <strong>Source-anchoring guardrails:</strong> Retrieved context is injected with explicit framing &mdash; "only state facts that appear explicitly" + "do not infer or extrapolate." Prevents hallucination when the agent weaves recalled memories into responses.
       </div>
     </div>
 
@@ -548,6 +573,20 @@
           <td>None</td>
           <td>None</td>
           <td class="highlight-cell">SEAL: metabolism &rarr; contemplation (3-pass/20h) &rarr; crystallization (3-gate + human review)</td>
+        </tr>
+        <tr>
+          <td>Thread scoping</td>
+          <td>user_id / agent_id</td>
+          <td>Wings / rooms</td>
+          <td>Wiki pages</td>
+          <td class="highlight-cell">Infinite threads: persistent project scopes with 80% RRF boost, LLM warm start, consolidation</td>
+        </tr>
+        <tr>
+          <td>Hallucination prevention</td>
+          <td>None</td>
+          <td>Verbatim storage</td>
+          <td>None</td>
+          <td class="highlight-cell">Source-anchoring guardrails + truth table + proper noun detection</td>
         </tr>
         <tr>
           <td>Growth tracking</td>

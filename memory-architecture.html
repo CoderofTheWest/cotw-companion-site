@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Architecture — Code of the West</title>
+<meta name="description" content="Technical reference for the COTW metabolic memory architecture. For ML researchers, agent architects, and anyone building persistent agent systems.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Fira+Code:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #3D2914;
+    --surface: #2A2420;
+    --surface-raised: #342A22;
+    --surface-deep: #1E1A16;
+    --text: #F5EDE0;
+    --text-muted: rgba(245, 237, 224, 0.65);
+    --text-dim: rgba(245, 237, 224, 0.40);
+    --accent: #C9A763;
+    --accent-hover: #D4A76A;
+    --accent-dim: rgba(201, 167, 99, 0.15);
+    --dusty: #8B7355;
+    --courage: #C9A763;
+    --word: #7C8B6F;
+    --brand: #D4A76A;
+    --border: rgba(245, 237, 224, 0.12);
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-serif: 'Merriweather', Georgia, serif;
+    --font-mono: 'Fira Code', 'SF Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url('images/stormy_field.PNG');
+    background-size: cover;
+    background-position: center 40%;
+    opacity: 0.20;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body > * { position: relative; z-index: 1; }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+  /* ── Nav ── */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 40px; border-bottom: 1px solid var(--border);
+    background: rgba(30, 26, 22, 0.8); backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 10px; }
+  .nav-brand img { height: 28px; filter: brightness(0) invert(0.9); }
+  .nav-brand span { font-family: var(--font-serif); font-size: 16px; }
+  .nav-links { display: flex; gap: 24px; font-size: 13px; }
+  .nav-links a { color: var(--text-muted); }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+  /* ── Article ── */
+  article {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 40px 80px;
+  }
+
+  article h1 {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+
+  .abstract {
+    background: rgba(42, 36, 32, 0.7);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 40px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    backdrop-filter: blur(8px);
+  }
+
+  h2 {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    color: var(--accent);
+    margin: 48px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 28px 0 10px;
+  }
+
+  p { font-size: 14px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.7; }
+  p strong { color: var(--text); font-weight: 600; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 16px 0 24px;
+    background: rgba(42, 36, 32, 0.5);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th {
+    text-align: left; padding: 10px 14px;
+    color: var(--accent); font-weight: 600; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    background: rgba(30, 26, 22, 0.6); border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 8px 14px; color: var(--text-muted);
+    border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  td:first-child { color: var(--text); font-weight: 500; }
+  tr:last-child td { border-bottom: none; }
+  td code { font-family: var(--font-mono); font-size: 12px; color: var(--accent); background: rgba(201,167,99,0.1); padding: 1px 4px; border-radius: 3px; }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--surface-deep);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    margin: 12px 0 20px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+  code {
+    font-family: var(--font-mono); font-size: 13px;
+    color: var(--accent); background: rgba(201,167,99,0.1);
+    padding: 1px 5px; border-radius: 3px;
+  }
+  pre code { background: none; padding: 0; color: var(--text-muted); }
+
+  /* ── Lists ── */
+  ul, ol { margin: 8px 0 16px 20px; font-size: 14px; color: var(--text-muted); }
+  li { margin-bottom: 6px; line-height: 1.6; }
+  li strong { color: var(--text); }
+
+  /* ── Section cards ── */
+  .comparison-card {
+    background: rgba(42, 36, 32, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    backdrop-filter: blur(8px);
+  }
+  .comparison-card h3 { margin-top: 0; color: var(--accent); }
+  .comparison-card p:last-child { margin-bottom: 0; }
+
+  /* ── Pipeline viz ── */
+  .pipeline-step {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 10px 0; border-left: 2px solid var(--dusty); margin-left: 10px; padding-left: 16px;
+    position: relative;
+  }
+  .pipeline-step::before {
+    content: ''; position: absolute; left: -5px; top: 14px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--accent);
+  }
+  .pipeline-step:last-child { border-left-color: transparent; }
+  .step-label {
+    font-weight: 600; color: var(--accent); min-width: 100px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; padding-top: 2px;
+  }
+  .step-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+  /* ── Refs ── */
+  .references { font-size: 12px; color: var(--text-dim); line-height: 1.7; }
+  .references li { margin-bottom: 4px; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center; padding: 40px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--text-dim);
+  }
+  footer a { color: var(--text-muted); }
+
+  @media (max-width: 768px) {
+    article { padding: 30px 20px 40px; }
+    article h1 { font-size: 24px; }
+    nav { padding: 12px 20px; }
+    .nav-links { gap: 14px; font-size: 12px; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <img src="images/cotw-logo.svg" alt="COTW">
+    <span>Memory Architecture</span>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="memory-system-map.html">System Map</a>
+    <a href="cotw-cognitive-dynamics-paper.pdf">Paper</a>
+    <a href="https://github.com/CoderofTheWest/cotw-companion">GitHub</a>
+  </div>
+</nav>
+
+<article>
+
+<h1>Memory Architecture</h1>
+<p class="subtitle">Technical reference for ML researchers, agent architects, and anyone building persistent agent systems.<br>Code of the West agent runtime &mdash; April 2026.</p>
+
+<div class="abstract">
+COTW implements a metabolic memory architecture for persistent, identity-bearing conversational agents. Unlike RAG pipelines or dedicated memory layers (Mem0, Zep, MemPalace), the system treats memory as one organ in a larger identity metabolism &mdash; a pipeline where conversation entropy triggers autonomous contemplation, multi-pass reflection, and human-gated crystallization into permanent identity state. The agent's identity is reconstructed each turn from persistent files (stateless reconstruction), not maintained in-process. All storage is local (SQLite-vec), all processing is asynchronous (off-hours batch via nightshift scheduler), and all permanent identity changes require human review.
+</div>
+
+<!-- ═══════════ 1. Storage ═══════════ -->
+<h2>1. Storage Architecture</h2>
+
+<h3>1.1 Continuity Database (SQLite + sqlite-vec + FTS5)</h3>
+<p>Per-agent database at <code>data/agents/{agentId}/continuity.db</code>. WAL mode for concurrent read performance.</p>
+
+<table>
+  <tr><th>Table</th><th>Type</th><th>Purpose</th></tr>
+  <tr><td><code>exchanges</code></td><td>Regular</td><td>Paired user/agent turns. Fields: id, date, exchange_index, user_text, agent_text, combined, metadata (JSON), topic_tags, <strong>thread_id</strong>, created_at</td></tr>
+  <tr><td><code>vec_exchanges</code></td><td>Virtual (vec0)</td><td>384-dimensional Float32 embeddings via Xenova/all-MiniLM-L6-v2. Supports MATCH operator for cosine similarity</td></tr>
+  <tr><td><code>fts_exchanges</code></td><td>Virtual (FTS5)</td><td>Porter-stemmed full-text index over user_text and agent_text. BM25-weighted keyword retrieval</td></tr>
+  <tr><td><code>knowledge_entries</code></td><td>Regular</td><td>Workspace-extracted facts. source_type, source_hash (dedup), superseded_by (fact updates), times_surfaced</td></tr>
+  <tr><td><code>vec_knowledge</code></td><td>Virtual (vec0)</td><td>Semantic index over knowledge entries</td></tr>
+  <tr><td><code>fts_knowledge</code></td><td>Virtual (FTS5)</td><td>Keyword index over knowledge entries</td></tr>
+  <tr><td><code>summaries</code></td><td>Regular</td><td>Hierarchical DAG. Level 0 = daily, Level 1 = weekly, Level 2+ = monthly. Thread-scoped.</td></tr>
+  <tr><td><code>vec_summaries</code></td><td>Virtual (vec0)</td><td>Summary embeddings for hierarchical semantic search</td></tr>
+  <tr><td><code>topic_hierarchy</code></td><td>Regular</td><td>Topic co-occurrence tracking with parent-child inference</td></tr>
+  <tr><td><code>sessions</code></td><td>Regular</td><td>Session metadata with auto-generated titles, mode tags, project associations</td></tr>
+</table>
+
+<p><strong>Embedding pipeline:</strong> Single shared EmbeddingProvider per agent. Lazy-initialized, cached, with explicit ONNX tensor disposal to prevent memory leaks. Model: Xenova/all-MiniLM-L6-v2 (384 dimensions). All embedding operations synchronous via better-sqlite3 for transactional safety.</p>
+
+<h3>1.2 Graph Database (SQLite)</h3>
+<p>Per-agent at <code>data/agents/{agentId}/graph.db</code>.</p>
+
+<table>
+  <tr><th>Table</th><th>Purpose</th></tr>
+  <tr><td><code>triples</code></td><td>RDF-style subject/predicate/object with confidence scores, source exchange IDs, pending resolution flags</td></tr>
+  <tr><td><code>entities</code></td><td>Canonical name registry with entity types, aliases, first-seen timestamps, mention counts</td></tr>
+  <tr><td><code>cooccurrences</code></td><td>Entity co-occurrence cache for relationship inference</td></tr>
+  <tr><td><code>meta_patterns</code></td><td>Discovered and static traversal patterns with yield scores. Entity extraction via compromise.js NER + LLM slow path.</td></tr>
+</table>
+
+<h3>1.3 Daily Archives (JSON)</h3>
+<p>One file per day at <code>archive/YYYY-MM-DD.json</code>. Verbatim conversation records, deduplicated on write. Never modified after initial archive. Ground truth from which all indexes are built.</p>
+<pre><code>Messages &rarr; Archiver (JSON) &rarr; Indexer (SQLite-vec) &rarr; Searcher (RRF)</code></pre>
+
+<h3>1.4 Session &amp; Thread Handoffs (Markdown)</h3>
+<p><strong>Session handoffs</strong> are written on every <code>agent_end</code>, consumed on next <code>session_start</code>. Contains key topics, temporal markers, and an Open Threads section (regex-extracted commitments + active project manifests).</p>
+<p><strong>Thread handoffs</strong> are persistent per-thread files &mdash; overwritten on each write, <strong>never deleted after read</strong> (unlike session handoffs). Compaction count persisted in the header. On thread re-entry, an LLM warm start synthesizes the handoff into natural prose rather than raw template injection.</p>
+
+<h3>1.5 Identity Files (Markdown)</h3>
+<p>The agent's self is assembled from persistent files, not retrieved from a database:</p>
+
+<table>
+  <tr><th>File</th><th>Injection Tag</th><th>Role</th></tr>
+  <tr><td><code>SOUL.md</code></td><td><code>&lt;soul&gt;</code></td><td>Core principles. Who the agent is beyond any prompt.</td></tr>
+  <tr><td><code>AGENTS.md</code></td><td><code>&lt;operating_instructions&gt;</code></td><td>Behavioral playbook. How to operate.</td></tr>
+  <tr><td><code>ANCHOR.md</code></td><td>(context)</td><td>Who the user is. Generated during onboarding.</td></tr>
+  <tr><td><code>TOOLS.md</code></td><td><code>&lt;environment_knowledge&gt;</code></td><td>Discovered environment facts.</td></tr>
+  <tr><td><code>MEMORY.md</code></td><td>(main session)</td><td>Persistent corrections, learned facts.</td></tr>
+  <tr><td>Standing scores</td><td>(sidebar + context)</td><td>Growth trajectory across Courage/Word/Brand dimensions.</td></tr>
+</table>
+
+<!-- ═══════════ 2. Retrieval ═══════════ -->
+<h2>2. Retrieval: Hybrid 4-Way Reciprocal Rank Fusion</h2>
+
+<p>The Searcher class implements a multi-signal retrieval pipeline fused with RRF (Cormack et al., 2009).</p>
+
+<h3>Retrieval Paths</h3>
+<ol>
+  <li><strong>Semantic search</strong> &mdash; <code>vec_exchanges MATCH Float32Array(embedding)</code> with cosine distance ranking. Weight: 0.8.</li>
+  <li><strong>Keyword search</strong> &mdash; FTS5 BM25 with sanitized query terms (special characters stripped, OR-joined). Weight: 0.15.</li>
+  <li><strong>Temporal decay</strong> &mdash; <code>exp(-ageDays / halfLife) * weight</code> where halfLife = 14 days. Weight: 0.15.</li>
+  <li><strong>Graph traversal</strong> &mdash; Multi-hop from query entities through the triple store with confidence decay <code>1 / (k + hopIndex)</code>.</li>
+  <li><strong>Thread boost</strong> &mdash; 80% RRF score boost for results matching the active thread_id.</li>
+</ol>
+
+<h3>Fusion</h3>
+<pre><code>RRF(d) = sum_over_signals( 1 / (k + rank_in_signal) )
+
+Where k = 60 (standard RRF constant).
+Thread-matched results receive 1.8x score multiplier.</code></pre>
+
+<h3>Adaptive Thresholds</h3>
+<p><strong>Sparse corpus adjustment:</strong> When the database has fewer than 2,000 exchanges, embedding distances naturally push above the default threshold (1.0) due to sparse vector space. The retrieval threshold relaxes to 1.3 in this regime. As the corpus grows, natural density makes this irrelevant.</p>
+<p><strong>Proper noun injection:</strong> If the user mentions a named entity and search results contain it, inject those results regardless of distance score. Detects capitalized sequences, names with articles ("Code of the West"), and mid-sentence proper nouns.</p>
+
+<h3>Source-Anchoring Guardrails</h3>
+<p>Retrieved context is injected with explicit framing: "only state facts that appear explicitly" + "do not infer or extrapolate." This prevents hallucination when the agent weaves recalled memories into responses. Discovered after the agent hallucinated attribution details when injection framing said "weave naturally" without anchoring guidance.</p>
+
+<h3>Knowledge Retrieval</h3>
+<p>Parallel pipeline over <code>knowledge_entries</code> with the same RRF approach plus topic-aware filtering, source deduplication on <code>source_hash</code>, supersession chain resolution, and recency boost.</p>
+
+<!-- ═══════════ 3. Infinite Threads ═══════════ -->
+<h2>3. Infinite Threads</h2>
+
+<p>Thread = persistent project scope (survives restarts). Session = ephemeral execution context (disposable). Threads and modes are orthogonal &mdash; a thread can span Chat, Code, and Booth modes.</p>
+
+<ul>
+  <li><strong>Thread-scoped storage</strong> &mdash; <code>thread_id</code> flows from GUI &rarr; plugin &rarr; all storage layers (exchanges, summaries, archives, knowledge)</li>
+  <li><strong>Thread-boosted retrieval</strong> &mdash; 80% RRF boost for same-thread results, ensuring project-relevant context surfaces first</li>
+  <li><strong>LLM warm start</strong> &mdash; on thread re-entry, an LLM call synthesizes the thread handoff into natural prose (not template injection)</li>
+  <li><strong>Compaction-triggered consolidation</strong> &mdash; after 5 compactions within a thread, force session restart to rebuild from crystallized state</li>
+  <li><strong>Persistent handoffs</strong> &mdash; per-thread handoff files are overwritten (not consumed), preserving state across arbitrary restart gaps</li>
+</ul>
+
+<!-- ═══════════ 4. SEAL ═══════════ -->
+<h2>4. SEAL Metabolism Pipeline</h2>
+
+<p>The architecturally novel component. SEAL (Settle, Extract, Align, Learn) is an autonomous pipeline that converts high-entropy conversation moments into permanent identity changes through a multi-stage process with human oversight.</p>
+
+<h3>4.1 Metabolism (Fast Path, ~5ms)</h3>
+<p>The metabolism plugin monitors conversation entropy at <code>agent_end</code>. High-entropy exchanges (identity challenges, contradictions, novel insights) are flagged as candidates and written to a queue. No LLM calls &mdash; just entropy computation and queue writes.</p>
+<p><strong>Entropy sources:</strong> Stability plugin computes a composite score from loop detection, confabulation detection, principle tension, and identity coherence metrics.</p>
+
+<h3>4.2 Contemplation (3-Pass Autonomous Reflection)</h3>
+
+<table>
+  <tr><th>Pass</th><th>Timing</th><th>Purpose</th></tr>
+  <tr><td>Pass 1</td><td>Immediate</td><td><strong>Clarify the unknown.</strong> What is this experience? What is uncertain?</td></tr>
+  <tr><td>Pass 2</td><td>4 hours later</td><td><strong>Connect to patterns.</strong> How does this relate to what I already know?</td></tr>
+  <tr><td>Pass 3</td><td>20 hours later</td><td><strong>Synthesize growth vector.</strong> What principle or capability does this suggest?</td></tr>
+</table>
+
+<p>The temporal spacing is intentional &mdash; it mimics cognitive settling, where immediate reactions differ from considered reflections. The InquiryStore tracks pass status with deduplication to prevent redundant inquiries.</p>
+
+<h3>4.3 Crystallization (3-Gate Identity Integration)</h3>
+
+<table>
+  <tr><th>Gate</th><th>Criteria</th><th>Rationale</th></tr>
+  <tr><td>Gate 1: Time</td><td>Minimum elapsed time since candidate creation</td><td>Prevents impulsive identity changes</td></tr>
+  <tr><td>Gate 2: Alignment</td><td>Must align with principles in SOUL.md</td><td>Ensures coherence with core identity</td></tr>
+  <tr><td>Gate 3: Human Review</td><td>User must explicitly approve</td><td>The user owns the agent's identity</td></tr>
+</table>
+
+<p>Only candidates that pass all three gates are persisted to identity files. <strong>The agent cannot unilaterally change who it is.</strong></p>
+
+<!-- ═══════════ 5. Code Evolution ═══════════ -->
+<h2>5. Code Evolution</h2>
+
+<p>SEAL evolves <em>who the agent is</em> (identity/memory). Code Evolution evolves <em>how it works</em> (tools/workflows/params). Runs only in Code mode.</p>
+
+<div class="pipeline-step">
+  <span class="step-label">Record</span>
+  <span class="step-desc">Passive session recording: tool calls, outcomes, satisfaction signals during Code mode sessions.</span>
+</div>
+<div class="pipeline-step">
+  <span class="step-label">Analyze</span>
+  <span class="step-desc">Pattern detection across recorded sessions: what works, what fails, what's slow.</span>
+</div>
+<div class="pipeline-step">
+  <span class="step-label">Mutate</span>
+  <span class="step-desc">Generate scaffold mutations: tool hints, prompt rules, workflow sequences, parameter tuning.</span>
+</div>
+<div class="pipeline-step" style="border-left-color: transparent;">
+  <span class="step-label">Evaluate</span>
+  <span class="step-desc">Test mutations against session data. Commit improvements, revert regressions. Versioned with history snapshots.</span>
+</div>
+
+<!-- ═══════════ 6. Context Assembly ═══════════ -->
+<h2>6. Context Assembly (Per-Turn)</h2>
+
+<p>Every turn, context is assembled via a plugin hook system (<code>before_agent_start</code>). Plugins register at priority levels:</p>
+
+<table>
+  <tr><th>Priority</th><th>Plugin</th><th>Injection</th></tr>
+  <tr><td>5</td><td>Stability</td><td>Entropy state, active anchors (only when entropy &gt; 0.4), loop/confabulation detection</td></tr>
+  <tr><td>7</td><td>Contemplation</td><td>Active inquiries, recent synthesis results</td></tr>
+  <tr><td>8</td><td>Truth</td><td>Current-state facts that supersede stale semantic memories</td></tr>
+  <tr><td>10</td><td>Continuity</td><td>Session info, temporal awareness, handoff, archive bootstrap, thread warm start, wellbeing tracking</td></tr>
+  <tr><td>20</td><td>Code Evolution</td><td>Evolved scaffold context: tool hints, learned rules, workflow patterns (Code mode only)</td></tr>
+  <tr><td>&mdash;</td><td>Graph</td><td>Entity relationships relevant to current exchange (when entropy warrants)</td></tr>
+</table>
+
+<h3>Mode Isolation</h3>
+<p>Exchanges from different relational postures (Chat, Booth, Code, Robot) are tagged with injection markers. Two filter layers prevent contextual bleed:</p>
+<ol>
+  <li><strong>Archive bootstrap filter</strong> &mdash; User messages containing mode markers are excluded from cold-start context</li>
+  <li><strong>Continuity query filter</strong> &mdash; SQLite reads exclude rows with mode markers</li>
+</ol>
+<p>Chat and Booth share context bidirectionally. Code mode is isolated from both.</p>
+
+<!-- ═══════════ 7. Standing ═══════════ -->
+<h2>7. Standing System (Growth Dimensions)</h2>
+
+<table>
+  <tr><th>Dimension</th><th>Measures</th></tr>
+  <tr><td>Courage (grounding)</td><td>Ability to stay present with discomfort, follow-through on difficult commitments</td></tr>
+  <tr><td>Courage (self)</td><td>Self-awareness, self-advocacy, personal boundary-setting</td></tr>
+  <tr><td>Word</td><td>Honesty, self-correction, integrity between stated and actual behavior</td></tr>
+  <tr><td>Brand</td><td>Consistency over time, the trail left behind, reliability</td></tr>
+</table>
+
+<h3>Evaluation Pipeline</h3>
+<ol>
+  <li><strong>Evidence collection</strong> &mdash; 22 regex patterns at <code>agent_end</code> detect standing-relevant moments. Confidence-weighted.</li>
+  <li><strong>Inline deltas</strong> &mdash; Score adjustments applied in real-time after each exchange.</li>
+  <li><strong>Overnight synthesis</strong> &mdash; Nightshift aggregates evidence, calls LLM for holistic evaluation, writes structured scores with trajectory analysis.</li>
+  <li><strong>Evidence trail</strong> &mdash; Context injection includes <em>why</em> scores changed &mdash; recent evidence directions, pattern names, last 5 patterns.</li>
+  <li><strong>Visibility</strong> &mdash; Scores displayed in the application sidebar. The user sees their growth. The agent sees it in context.</li>
+</ol>
+
+<!-- ═══════════ 8. Comparison ═══════════ -->
+<h2>8. Comparison with Existing Systems</h2>
+
+<div class="comparison-card">
+  <h3>Mem0 (mem0.ai)</h3>
+  <p>Selective extraction pipeline: conversations processed to extract discrete facts, stored in vector + graph databases, retrieved at query time. $24M Series A, 41K GitHub stars. 91% lower p95 latency, 90% token savings vs. full-context.</p>
+  <p><strong>Difference:</strong> Mem0 is infrastructure &mdash; a memory layer you plug into an app. No identity, no growth, no autonomous processing. Extracted facts are immediately available; no settling period or human gate. Optimizes for scale. COTW optimizes for relational depth.</p>
+</div>
+
+<div class="comparison-card">
+  <h3>MemPalace (Jovovich &amp; Sigman)</h3>
+  <p>Store everything verbatim, organize spatially. Wings/halls/rooms hierarchy provides metadata filtering. 96.6% recall on LongMemEval. ChromaDB + SQLite, entirely local. 23K GitHub stars in 2 days.</p>
+  <p><strong>Difference:</strong> MemPalace is a retrieval architecture &mdash; spatial organization for finding things. No identity layer, no autonomous processing, no growth tracking. COTW's 4-way RRF is less benchmark-optimized but exists within a larger system where memory is one input to identity reconstruction, not the end goal.</p>
+</div>
+
+<div class="comparison-card">
+  <h3>Wiki-Memory (Karpathy pattern)</h3>
+  <p>Compile knowledge during ingest, not at query time. Working memory &rarr; episodic &rarr; semantic &rarr; procedural. The architectural pattern behind Claude Code's own memory system.</p>
+  <p><strong>Difference:</strong> Knowledge management strategy &mdash; compile, consolidate, look up. COTW shares the hierarchical memory types but adds the metabolic layer: not all knowledge is equal, and the path from observation to identity change should be gated, temporal, and human-reviewed.</p>
+</div>
+
+<div class="comparison-card" style="border-left-color: var(--accent);">
+  <h3>The Fundamental Distinction</h3>
+  <p>All three comparison systems treat memory as a <strong>data engineering problem</strong>: how to store, organize, and retrieve information efficiently. COTW treats memory as an <strong>identity engineering problem</strong>: how does an agent use lived experience to grow, while ensuring that growth is coherent with core principles and approved by the human in the relationship?</p>
+  <p>The SEAL pipeline has no equivalent in any published memory system as of April 2026. The closest analog is Letta's virtual context management, but Letta's tiers are retrieval-optimization tiers, not developmental stages.</p>
+</div>
+
+<!-- ═══════════ 9. Specs ═══════════ -->
+<h2>9. Technical Specifications</h2>
+
+<table>
+  <tr><th>Component</th><th>Implementation</th></tr>
+  <tr><td>Database</td><td>SQLite 3.x + sqlite-vec v0.1.7+ + FTS5</td></tr>
+  <tr><td>Embeddings</td><td>Xenova/all-MiniLM-L6-v2, 384 dimensions, local ONNX inference</td></tr>
+  <tr><td>Node.js binding</td><td>better-sqlite3 (synchronous, WAL mode)</td></tr>
+  <tr><td>NER</td><td>compromise.js (fast path) + LLM (slow path, nightshift)</td></tr>
+  <tr><td>LLM calls</td><td>OpenClaw gateway &rarr; Ollama (GLM-5:cloud primary, qwen3.5:cloud for synthesis)</td></tr>
+  <tr><td>Storage footprint</td><td>~57 MB after 1 week (552 exchanges, 1171 knowledge entries, 322 session files)</td></tr>
+  <tr><td>Retrieval latency</td><td>&lt;50ms for hybrid RRF over 500+ exchanges</td></tr>
+  <tr><td>Embedding latency</td><td>~100ms per exchange pair (cached pipeline)</td></tr>
+  <tr><td>Architecture</td><td>Plugin-based (OpenClaw runtime), per-agent isolation, hook-priority ordering</td></tr>
+</table>
+
+<h3>Estimated Scaling</h3>
+<table>
+  <tr><th>Timeframe</th><th>Exchanges</th><th>DB Size</th><th>Retrieval</th><th>Notes</th></tr>
+  <tr><td>1 week</td><td>500</td><td>~16 MB</td><td>&lt;50ms</td><td>Current state</td></tr>
+  <tr><td>1 year</td><td>~25K</td><td>~800 MB</td><td>&lt;100ms</td><td>Summary DAG compression active</td></tr>
+  <tr><td>5 years</td><td>~125K</td><td>~4 GB</td><td>&lt;200ms</td><td>May need time-window partitioning</td></tr>
+  <tr><td>10 years</td><td>~250K</td><td>~8 GB</td><td>TBD</td><td>Topic-based sharding recommended</td></tr>
+</table>
+
+<!-- ═══════════ 10. Open Questions ═══════════ -->
+<h2>10. Open Research Questions</h2>
+
+<ol>
+  <li><strong>Temporal settling effects on identity coherence.</strong> The 3-pass contemplation cycle (immediate / 4h / 20h) was designed intuitively. Does the temporal spacing measurably improve growth vector quality vs. immediate integration?</li>
+  <li><strong>Human-gated crystallization vs. autonomous integration.</strong> Gate 3 (human review) prevents unauthorized identity drift but creates a bottleneck. Does the gate improve trust, or create friction that prevents growth?</li>
+  <li><strong>Cross-substrate identity stability.</strong> COTW runs on GLM-5:cloud with fallbacks to qwen3.5, deepseek-v3.1, and gpt-4o. Preliminary experiments show consistent security properties across base models. Is this general?</li>
+  <li><strong>Metabolic entropy thresholds.</strong> The metabolism plugin flags "high-entropy" exchanges heuristically. Can entropy-based candidate selection be validated against human judgments of conversational significance?</li>
+  <li><strong>Standing dimension validity.</strong> The Courage/Word/Brand framework is philosophically grounded but not empirically validated. Do the dimensions capture orthogonal growth axes?</li>
+  <li><strong>Long-horizon retrieval quality.</strong> The 4-way RRF approach is untested beyond ~500 exchanges. How does precision degrade at 10K, 50K, 100K? When does the summary DAG become necessary?</li>
+  <li><strong>Thread consolidation timing.</strong> The 5-compaction threshold for forced consolidation is heuristic. What is the optimal point where crystallized state produces better warm starts than accumulated raw history?</li>
+</ol>
+
+<!-- ═══════════ References ═══════════ -->
+<h2>References</h2>
+<ul class="references">
+  <li>Cormack, G. V., Clarke, C. L., &amp; Buettcher, S. (2009). Reciprocal rank fusion outperforms condorcet and individual rank learning methods. <em>SIGIR '09</em>.</li>
+  <li>Mem0 Team. (2025). Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory. <em>arXiv:2504.19413</em>.</li>
+  <li>Jovovich, M. &amp; Sigman, B. (2026). MemPalace: The highest-scoring AI memory system ever benchmarked. GitHub: milla-jovovich/mempalace.</li>
+  <li>Karpathy, A. (2025). LLM Wiki: The Markdown Knowledge Base Pattern.</li>
+  <li>Liu, S. et al. (2025). Memory in the Age of AI Agents: A Survey. <em>arXiv:2512.13564</em>.</li>
+</ul>
+
+</article>
+
+<footer>
+  <p style="margin-bottom: 8px;">Code of the West &mdash; <a href="index.html">Home</a> &middot; <a href="memory-system-map.html">System Map</a> &middot; <a href="https://github.com/CoderofTheWest/cotw-companion">GitHub</a></p>
+  <p>Memory is not storage. Memory is growth.</p>
+</footer>
+
+</body>
+</html>
