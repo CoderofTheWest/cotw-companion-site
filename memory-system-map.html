@@ -42,7 +42,7 @@
     content: '';
     position: fixed;
     inset: 0;
-    background-image: url('../images/stormy_field.PNG');
+    background-image: url('images/stormy_field.PNG');
     background-size: cover;
     background-position: center;
     opacity: 0.33;
@@ -345,7 +345,7 @@
     <div class="card">
       <div class="card-title">Session Handoff <span class="badge badge-store">Markdown</span></div>
       <div class="card-body">
-        Written on every <code>agent_end</code>. Consumed on next <code>session_start</code>. The bridge between sessions. Contains key topics, open threads, and temporal markers.
+        Written on every <code>agent_end</code>. Consumed on next <code>session_start</code>. The bridge between sessions. Contains key topics, temporal markers, and an <strong>Open Threads</strong> section &mdash; regex-extracted commitments, TODOs, and investigations from conversation + scan of active project manifests (up to 7 threads).
       </div>
     </div>
   </div>
@@ -406,6 +406,31 @@
       </div>
     </div>
 
+    <div class="card seal-card">
+      <div class="card-title">Code Evolution <span class="badge badge-auto">Autonomous</span></div>
+      <div class="card-body">
+        SEAL evolves <em>who the agent is</em> (identity/memory). Code Evolution evolves <em>how it works</em> (tools/workflows/params). Runs only in Code mode.
+      </div>
+      <div class="pipeline">
+        <div class="pipeline-step">
+          <span class="step-label">Record</span>
+          Passive session recording: tool calls, outcomes, satisfaction signals during Code mode.
+        </div>
+        <div class="pipeline-step">
+          <span class="step-label">Analyze</span>
+          Pattern detection across recorded sessions: what works, what fails, what's slow.
+        </div>
+        <div class="pipeline-step">
+          <span class="step-label">Mutate</span>
+          Generate scaffold mutations: tool hints, prompt rules, workflow sequences, parameter tuning.
+        </div>
+        <div class="pipeline-step">
+          <span class="step-label">Evaluate</span>
+          Test mutations against session data. Commit improvements, revert regressions.
+        </div>
+      </div>
+    </div>
+
     <div class="card flow-card">
       <div class="card-title">Bleed Prevention <span class="badge badge-core">Filter</span></div>
       <div class="card-body">
@@ -451,7 +476,7 @@
           <li><strong>Word</strong> &mdash; honesty, follow-through, self-correction</li>
           <li><strong>Brand</strong> &mdash; consistency, the trail you leave</li>
         </ul>
-        Evidence collected inline. Synthesis runs overnight via nightshift. Scores visible in sidebar.
+        Evidence collected inline (22 regex patterns). Synthesis runs overnight via nightshift. Context injection includes <strong>why</strong> scores changed &mdash; recent evidence directions, pattern names, and a trailing evidence trail (last 5 patterns). Scores visible in sidebar.
       </div>
     </div>
 
