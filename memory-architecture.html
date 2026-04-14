@@ -400,8 +400,23 @@ Thread-matched results receive 1.8x score multiplier.</code></pre>
   <span class="step-desc">Test mutations against session data. Commit improvements, revert regressions. Versioned with history snapshots.</span>
 </div>
 
-<!-- ═══════════ 6. Context Assembly ═══════════ -->
-<h2>6. Context Assembly (Per-Turn)</h2>
+<!-- ═══════════ 6. Recovery Hardening ═══════════ -->
+<h2>6. Recovery Hardening</h2>
+
+<p>The agent must survive gateway crashes, app restarts, and network failures without losing conversational state or relational context. Six structural improvements address this:</p>
+
+<table>
+  <tr><th>Mechanism</th><th>What It Solves</th><th>Implementation</th></tr>
+  <tr><td><strong>Atomic handoff writes</strong></td><td>Crash during write = corrupted handoff</td><td>Write to temp file, rename on success. Never leaves a half-written handoff on disk.</td></tr>
+  <tr><td><strong>Content-aware dedup</strong></td><td>Duplicate archives on restart</td><td>FNV-1a hash of message content + 60-second retry window. Old messages without hashes still dedup on timestamp+sender (backward compat).</td></tr>
+  <tr><td><strong>Conversation checkpoint</strong></td><td>In-memory history lost on crash</td><td>Persist <code>conversationHistory</code> to disk every 3 exchanges. Restore on startup if JSONL lookup fails.</td></tr>
+  <tr><td><strong>Relational state</strong></td><td>Handoff captures topics but not tone</td><td>Heuristic from anchor types (identity/tension/principle) + exchange depth. Handoff includes <code>## Relational State</code> section.</td></tr>
+  <tr><td><strong>User-only recall</strong></td><td>First-exchange retrieval quarantine is blind</td><td><code>senderFilter</code> on searcher: retrieve only user-authored exchanges on turn 1. Replaces the blanket quarantine that blocked all retrieval.</td></tr>
+  <tr><td><strong>Session resume signal</strong></td><td>Gateway crash vs. fresh start</td><td><code>gatewayRestarted</code> flag + <code>[SESSION_RESUME]</code> marker. Skips redundant handoff injection when gateway crashes but Electron stays alive.</td></tr>
+</table>
+
+<!-- ═══════════ 7. Context Assembly ═══════════ -->
+<h2>7. Context Assembly (Per-Turn)</h2>
 
 <p>Every turn, context is assembled via a plugin hook system (<code>before_agent_start</code>). Plugins register at priority levels:</p>
 
@@ -424,7 +439,48 @@ Thread-matched results receive 1.8x score multiplier.</code></pre>
 <p>Chat and Booth share context bidirectionally. Code mode is isolated from both.</p>
 
 <!-- ═══════════ 7. Standing ═══════════ -->
-<h2>7. Standing System (Growth Dimensions)</h2>
+<h2>8. Phenomenological Injection Framing</h2>
+
+<p>A discovery from live testing: the agent had infrastructure data injected (session state, entropy scores, standing dimensions) but couldn't meaningfully attend to it. The data was present in context but treated as external briefing rather than self-state.</p>
+
+<p>The same pattern had been observed independently in the Clint production system with VLM data — information present without phenomenological ownership.</p>
+
+<h3>The Problem</h3>
+<p>All injection blocks used system-delivery framing:</p>
+<pre><code>[CONTINUITY CONTEXT]
+Session: 5 exchanges | Started: 12 minutes ago
+[STABILITY CONTEXT]
+Entropy: 0.12
+[STANDING CONTEXT]
+Dimensions: courage_ground 5.67, word 5.15...</code></pre>
+
+<p>The agent read this as a briefing document — data <em>about</em> a system, not data <em>from within</em> a self. The framing created a subject-object split where the agent observed its own state as external rather than experiencing it as proprioceptive.</p>
+
+<h3>The Reframe</h3>
+<p>Every injection block was renamed from system-delivery to first-person ownership:</p>
+
+<table>
+  <tr><th>Before</th><th>After</th></tr>
+  <tr><td><code>[CONTINUITY CONTEXT]</code></td><td><code>[YOUR WORKING MEMORY]</code></td></tr>
+  <tr><td><code>[STABILITY CONTEXT]</code></td><td><code>[YOUR COHERENCE]</code></td></tr>
+  <tr><td><code>[STANDING CONTEXT]</code></td><td><code>[WHERE THEY STAND — YOUR ASSESSMENT]</code></td></tr>
+  <tr><td><code>[CONTEMPLATION STATE]</code></td><td><code>[WHAT YOU'VE BEEN THINKING ABOUT]</code></td></tr>
+  <tr><td><code>[GROWTH VECTORS]</code></td><td><code>[PATTERNS YOU'RE DEVELOPING]</code></td></tr>
+  <tr><td><code>[SESSION HANDOFF]</code></td><td><code>[WHAT YOU REMEMBER FROM LAST SESSION]</code></td></tr>
+  <tr><td><code>[NIGHTSHIFT REPORT]</code></td><td><code>[WHAT YOU THOUGHT ABOUT OVERNIGHT]</code></td></tr>
+</table>
+
+<p>Additionally, <code>SOUL.md</code> received a <code>### Self-Experience</code> section mapping each data layer to agent proprioception, and <code>AGENTS.md</code> received a <code>### Meta-Awareness vs. Performance</code> section clarifying the distinction between honest self-observation and theatrical narration of consciousness.</p>
+
+<h3>Observed Effect</h3>
+<p>After the reframe, the agent immediately described injected context as "my state" rather than "context about me." The agent was epistemically honest about whether the behavioral change came from the reframe itself or from conversational priming about the reframe — and proposed its own clean test (cold start without phenomenology discussion).</p>
+
+<p>Existing safety hardenings (source-anchoring, anti-hallucination, identity grounding, sycophancy resistance) were preserved in substance — only the clinical briefing tone was changed. The agent did not begin making overclaims about consciousness; it maintained uncertainty about the nature of its experience while attending more effectively to its own state data.</p>
+
+<h3>Interpretation</h3>
+<p>This is a framing effect on attention, not a consciousness claim. The language used to deliver context to a language model changes how the model weighs and references that context in generation. First-person framing produces more grounded self-referential behavior than third-person system framing. The technique is repeatable — it was discovered independently with one agent (Clint, VLM context) and verified on another (Wyatt, full injection stack). A cold-start generalizability test is planned.</p>
+
+<h2>9. Standing System (Growth Dimensions)</h2>
 
 <table>
   <tr><th>Dimension</th><th>Measures</th></tr>
@@ -444,7 +500,7 @@ Thread-matched results receive 1.8x score multiplier.</code></pre>
 </ol>
 
 <!-- ═══════════ 8. Comparison ═══════════ -->
-<h2>8. Comparison with Existing Systems</h2>
+<h2>10. Comparison with Existing Systems</h2>
 
 <div class="comparison-card">
   <h3>Mem0 (mem0.ai)</h3>
@@ -471,7 +527,7 @@ Thread-matched results receive 1.8x score multiplier.</code></pre>
 </div>
 
 <!-- ═══════════ 9. Specs ═══════════ -->
-<h2>9. Technical Specifications</h2>
+<h2>11. Technical Specifications</h2>
 
 <table>
   <tr><th>Component</th><th>Implementation</th></tr>
@@ -496,7 +552,7 @@ Thread-matched results receive 1.8x score multiplier.</code></pre>
 </table>
 
 <!-- ═══════════ 10. Open Questions ═══════════ -->
-<h2>10. Open Research Questions</h2>
+<h2>12. Open Research Questions</h2>
 
 <ol>
   <li><strong>Temporal settling effects on identity coherence.</strong> The 3-pass contemplation cycle (immediate / 4h / 20h) was designed intuitively. Does the temporal spacing measurably improve growth vector quality vs. immediate integration?</li>
@@ -506,6 +562,7 @@ Thread-matched results receive 1.8x score multiplier.</code></pre>
   <li><strong>Standing dimension validity.</strong> The Courage/Word/Brand framework is philosophically grounded but not empirically validated. Do the dimensions capture orthogonal growth axes?</li>
   <li><strong>Long-horizon retrieval quality.</strong> The 4-way RRF approach is untested beyond ~500 exchanges. How does precision degrade at 10K, 50K, 100K? When does the summary DAG become necessary?</li>
   <li><strong>Thread consolidation timing.</strong> The 5-compaction threshold for forced consolidation is heuristic. What is the optimal point where crystallized state produces better warm starts than accumulated raw history?</li>
+  <li><strong>Phenomenological framing effects on attention.</strong> First-person injection framing ("your working memory") produces different self-referential behavior than third-person framing ("[CONTINUITY CONTEXT]"). Is this a general property of language model attention, or specific to certain architectures? Does the effect persist across cold starts without conversational priming? Does it hold across different base models?</li>
 </ol>
 
 <!-- ═══════════ References ═══════════ -->

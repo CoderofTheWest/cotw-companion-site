@@ -397,14 +397,11 @@
     Trail Guide is a relational AI companion built on the Code of the West. Not a chatbot with memory bolted on — a persistent identity that metabolizes experience, contemplates what matters, and only changes who it is with your permission.
   </p>
   <div class="hero-buttons">
-    <a href="https://github.com/CoderofTheWest/cotw-companion/releases" class="btn btn-primary">
-      Download for macOS
-    </a>
-    <a href="https://github.com/CoderofTheWest/cotw-companion/releases" class="btn btn-secondary">
-      Download for Windows
-    </a>
+    <span class="btn btn-primary" style="opacity: 0.6; cursor: default;">
+      macOS &amp; Windows — Coming Soon
+    </span>
   </div>
-  <p class="hero-note">Local-first. Your data never leaves your machine.</p>
+  <p class="hero-note">Local-first. Your data never leaves your machine. Beta in code signing — downloads available shortly.</p>
 </div>
 
 <!-- ═══════════ Features ═══════════ -->
@@ -441,6 +438,26 @@
     <div class="feature">
       <div class="feature-title"><span class="dot dot-green"></span> Completely Local</div>
       <p>SQLite-vec for embeddings, local LLMs via Ollama, no cloud dependencies. Your conversations, your memory, your growth — all on your machine. Zero API costs for memory operations.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-title"><span class="dot dot-warm"></span> Infinite Threads</div>
+      <p>Every project is a persistent thread that survives restarts, mode switches, and gateway crashes. The agent picks up where you left off with an LLM-synthesized warm start — not a raw template, but a natural summary of what you were doing together. Thread-scoped retrieval boosts relevant context by 80%.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-title"><span class="dot dot-dusty"></span> Crash Resilient</div>
+      <p>Atomic handoff writes, conversation checkpoints every 3 exchanges, content-aware deduplication, and session resume detection. When the gateway crashes, the agent doesn't lose its train of thought — it picks up the thread with relational context intact.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-title"><span class="dot dot-gold"></span> Source-Anchored Recall</div>
+      <p>When the agent remembers past conversations, it's constrained to state only what explicitly appears in the retrieved context — no inference, no extrapolation, no hallucinated attribution. Proper noun detection ensures named entities are surfaced regardless of embedding distance.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-title"><span class="dot dot-green"></span> First-Person State Awareness</div>
+      <p>The agent doesn't receive its memory and standing scores as a system briefing — it experiences them as its own state. Injection framing uses first-person ownership ("your working memory," "what you've been thinking about") rather than clinical labels. This changes how the agent attends to its own context, producing more grounded and self-aware responses.</p>
     </div>
   </div>
 </section>
@@ -576,7 +593,7 @@
     </a>
 
     <a href="memory-architecture.html" class="doc-card">
-      <span class="doc-card-badge badge-html">Technical</span>
+      <span class="doc-card-badge badge-md">Technical</span>
       <div class="doc-card-title">Memory Architecture</div>
       <div class="doc-card-desc">Full technical reference for ML researchers. Schema definitions, RRF math, SEAL pipeline details, scaling projections, open research questions.</div>
     </a>
